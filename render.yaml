@@ -13,5 +13,7 @@ services:
         sync: false
       - key: OPENAI_MODEL
         value: gpt-4.1
-      - key: IAPAGES_PREVIEW_TOKEN
+      - key: IAPAGES_PREVIEW_TOKEN_V2
         generateValue: true
+      - key: IAPAGES_REQUIRE_PRIVATE_PREVIEW
+        value: "true"

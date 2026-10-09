@@ -3,16 +3,18 @@ import {readFile} from 'node:fs/promises';
 import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';
 import {createProvider} from './provider.mjs';
 import {AppError} from './html.mjs';
-export function createApp({key=process.env.OPENAI_API_KEY,model=process.env.OPENAI_MODEL||'gpt-4.1',provider=createProvider({key,model}),previewToken=process.env.IAPAGES_PREVIEW_TOKEN||''}={}){
+export function createApp({key=process.env.OPENAI_API_KEY,model=process.env.OPENAI_MODEL||'gpt-4.1',provider=createProvider({key,model}),previewToken=process.env.IAPAGES_PREVIEW_TOKEN_V2||'',requirePreviewToken=process.env.IAPAGES_REQUIRE_PRIVATE_PREVIEW==='true'||process.env.RENDER==='true'||process.env.NODE_ENV==='production'||!!process.env.IAPAGES_PREVIEW_TOKEN}={}){
  const sessions=new Map();let inFlight=false,lastStarted=0;
  const send=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
  return http.createServer(async(req,res)=>{
  try{
  const url=new URL(req.url,'http://localhost'),path=url.pathname;
  if(req.method==='GET'&&path==='/health')return send(res,200,{status:'ok'});
+ if(requirePreviewToken&&!previewToken)throw new AppError('PREVIEW_NOT_CONFIGURED','Acesso temporariamente bloqueado. Aplique o Blueprint para gerar IAPAGES_PREVIEW_TOKEN_V2 e reinicie o serviço.',503);
  if(previewToken){
  const accessHash=createHash('sha256').update(previewToken).digest('hex');
- const entered=url.searchParams.get('access')||'';
+ // Render-generated values can contain '+': query parsing turns it into a space.
+ const entered=(url.searchParams.get('access')||'').replace(/ /g,'+');
  const matches=Buffer.byteLength(entered)===Buffer.byteLength(previewToken)&&timingSafeEqual(Buffer.from(entered),Buffer.from(previewToken));
  if(req.method==='GET'&&path==='/open'&&matches){res.writeHead(303,{'Location':'/','Cache-Control':'no-store','Referrer-Policy':'no-referrer','Set-Cookie':`iapages_access=${accessHash}; HttpOnly; SameSite=Lax; Path=/; Max-Age=86400${req.socket.encrypted||req.headers['x-forwarded-proto']==='https'?'; Secure':''}`});return res.end();}
  const access=req.headers.cookie?.match(/(?:^|;\s*)iapages_access=([a-f0-9]{64})/)?.[1];
