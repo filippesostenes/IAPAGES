@@ -1,0 +1,23 @@
+{
+  "name": "iapages-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node --use-env-proxy --env-file-if-exists=.env scripts/serve.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/browser.mjs && node tests/ai-browser.mjs",
+    "test:live": "node --use-env-proxy --env-file-if-exists=.env tests/live.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.58.2"
+  },
+  "dependencies": {
+    "openai": "^6.49.0",
+    "sanitize-html": "^2.18.0"
+  },
+  "engines": {
+    "node": ">=24.5.0"
+  }
+}

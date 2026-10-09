@@ -1,0 +1,8 @@
+import {chromium} from '@playwright/test';
+import {createApp} from '../server/server.mjs';
+import {once} from 'node:events';
+import assert from 'node:assert/strict';
+import {templates} from '../src/engine.js';
+const server=createApp({key:'mode-test-not-real'});server.listen(0,'127.0.0.1');await once(server,'listening');
+const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
+try{const page=await browser.newPage();await page.goto(`http://127.0.0.1:${server.address().port}`);await page.locator('#send:not([disabled])').waitFor();const legacy={page:templates.clinic,history:[],messages:[{role:'user',text:'Clínica'}],mode:'demo',device:'desktop'};await page.evaluate(data=>new Promise((resolve,reject)=>{const req=indexedDB.open('iapages',1);req.onsuccess=()=>{const tx=req.result.transaction('projects','readwrite');tx.objectStore('projects').put(data,'current');tx.oncomplete=resolve;tx.onerror=reject;};}),legacy);await page.reload();await page.locator('#send:not([disabled])').waitFor();assert.equal(await page.locator('#mode').inputValue(),'ai');assert.equal(await page.locator('#frame-source').innerText(),'CONTEÚDO DE EXEMPLO');await page.locator('#mode').selectOption('demo');await page.locator('#mode-notice').waitFor();assert.match(await page.locator('#mode-notice').innerText(),/Demonstração ativa/);await page.reload();await page.locator('#send:not([disabled])').waitFor();assert.equal(await page.locator('#mode').inputValue(),'demo');console.log('PASS: legacy saved demo upgrades to OpenAI when configured; explicit demo selection stays with visible notice.');}finally{await browser.close();server.closeAllConnections();server.close();await once(server,'close');}
