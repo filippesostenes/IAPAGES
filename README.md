@@ -18,9 +18,9 @@ Abra a porta **3000** no encaminhamento privado de portas do seu ambiente. Se es
 
 ## Chave segura neste ambiente na nuvem
 
-A chave **não está configurada** e não deve ser colocada na conversa nem em qualquer arquivo do frontend.
+O segredo **está cadastrado, mas a API o recusou com `401 / invalid_api_key` na última verificação** e não deve ser colocada na conversa nem em qualquer arquivo do frontend.
 
-1. Abra **Configurações do ambiente** e cadastre o valor no requisito de segredo **`IAPAGES_OPENAI_KEY`**, com destino HTTPS **`api.openai.com`**. O requisito e a liberação de rede foram salvos no rascunho, sem valor.
+1. Abra **Configurações do ambiente** e substitua o valor no requisito de segredo **`IAPAGES_OPENAI_KEY`**, com destino HTTPS **`api.openai.com`**. O requisito e a liberação de rede já existem. Não é necessário duplicar o segredo.
 2. Revise e salve a configuração e publique o ambiente para aplicá-la. Reinicie o servidor para receber o segredo atualizado.
 3. `scripts/serve.mjs` associa a variável injetada a **`OPENAI_API_KEY` somente dentro do processo Node**. O SDK recebe essa variável; ela nunca é enviada ao navegador.
 
@@ -59,7 +59,7 @@ A demonstração continua disponível sem chave, com os três modelos e comandos
 
 ```sh
 npm test
-# servidor na porta 3000 e Chromium em /usr/bin/chromium:
+# Chromium em /usr/bin/chromium; os testes iniciam servidores isolados sem chave real:
 npm run test:browser
 # depois de configurar uma chave válida (faz duas chamadas reais, sujeitas ao uso da conta):
 npm run test:live
@@ -67,4 +67,4 @@ npm run test:live
 
 Os testes unitários/HTTP verificam Responses, multimodalidade, contexto, sanitização, erros, ausência de chave e proteção contra duplicatas. Os testes de navegador verificam os três modelos e, usando **respostas controladas do SDK**, os fluxos da integração e imagens, recarga, versões, download, responsividade e falhas sem perda da versão anterior. Essas respostas de teste não ficam disponíveis na aplicação.
 
-Nesta entrega, a chamada real não foi executada porque não há chave configurada. `test:live` informa o bloqueio e termina com status de erro nessa situação. Quando configurado, verifica geração e edição reais e salva os documentos em `dist/live-*.html`. O acesso à OpenAI também depende da aplicação do rascunho de rede; a configuração salva ainda não representa rede/segredo ativos.
+Na última verificação, o pedido real da oficina foi enviado pelo chat e retornou `401 / invalid_api_key`; o SDK e uma chamada direta à Responses confirmaram a rejeição. A prévia anterior ficou intacta; geração e edição reais ainda não foram concluídas. `test:live` informa o bloqueio e termina com status de erro nessa situação. Quando configurado, verifica geração e edição reais e salva os documentos em `dist/live-*.html`. A configuração de rede atual permite a chamada à API; o bloqueio observado é a rejeição do segredo. Para colocar o aplicativo online, consulte [DEPLOY.md](DEPLOY.md). A configuração Render usa o runtime nativo Node, com os comandos verificados aqui; o Dockerfile é opcional e a imagem não foi validada; o serviço externo só terá endereço após implantação na conta de hospedagem.

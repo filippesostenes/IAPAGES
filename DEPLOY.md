@@ -8,7 +8,7 @@ Em **Configurações do ambiente**, abra o segredo **IAPAGES_OPENAI_KEY**, desti
 
 ## Publicar com Render
 
-Dockerfile e render.yaml já estão preparados. O código precisa estar no repositório GitHub `filippesostenes/IAPAGES` (branch main), e sua conta precisa autorizar Render a ler esse repositório. Não inclua .env, node_modules ou arquivos com segredos. O diretório do projeto contém fontes e lockfile completos; o build gera o HTML na hospedagem.
+render.yaml está preparado para o runtime nativo Node, usando os mesmos comandos de instalação, build e inicialização verificados neste ambiente. Há também um Dockerfile opcional; a imagem Docker não foi validada aqui. O código precisa estar no repositório GitHub `filippesostenes/IAPAGES` (branch main), e sua conta precisa autorizar Render a ler esse repositório. Não inclua .env, node_modules ou arquivos com segredos. O diretório do projeto contém fontes e lockfile completos; o build gera o HTML na hospedagem.
 
 1. Abra **https://dashboard.render.com** e entre na sua conta.
 2. Clique **New + → Blueprint** e conecte o repositório **filippesostenes/IAPAGES**, branch **main**. (Se a conta ainda não estiver conectada, clique para conectar o GitHub e autorize esse repositório.)

@@ -1,9 +1,12 @@
 import {chromium,expect} from '@playwright/test';
 import assert from 'node:assert/strict';
+import {createApp} from '../server/server.mjs';
+import {once} from 'node:events';
+const server=createApp({key:''});server.listen(0,'127.0.0.1');await once(server,'listening');
 const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless:true,args:['--no-sandbox']});
 const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-await page.goto('http://127.0.0.1:3000');
+await page.goto(`http://127.0.0.1:${server.address().port}`);
 await page.screenshot({path:'dist/studio-inicio.png',fullPage:true});
 await page.locator('[data-example="clinic"]').click();
 await page.locator('#frame-shell:not([hidden])').waitFor();
@@ -31,4 +34,4 @@ for(const kind of ['consulting','local']){await page.locator(`[data-example="${k
 await page.setViewportSize({width:390,height:844});await page.screenshot({path:'dist/studio-celular.png',fullPage:true});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
 assert.equal(await page.locator('#page-preview').getAttribute('sandbox'),'');
 
-assert.deepEqual(errors,[]);console.log('PASS: 3 templates, edits, preserved sections, undo, persistence, download, unsupported command, responsive UI, and sandbox');await browser.close();
+assert.deepEqual(errors,[]);console.log('PASS: 3 templates, edits, preserved sections, undo, persistence, download, unsupported command, responsive UI, and sandbox');await browser.close();server.closeAllConnections();server.close();await once(server,'close');

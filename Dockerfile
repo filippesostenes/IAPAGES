@@ -1,10 +1,10 @@
 FROM node:24-bookworm-slim
 WORKDIR /app
-COPY package.json package-lock.json ./
+COPY --chown=node:node package.json package-lock.json ./
 RUN npm ci --omit=dev --no-audit --no-fund
-COPY src ./src
-COPY scripts ./scripts
-COPY server ./server
+COPY --chown=node:node src ./src
+COPY --chown=node:node scripts ./scripts
+COPY --chown=node:node server ./server
 RUN npm run build
 ENV NODE_ENV=production
 ENV PORT=3000

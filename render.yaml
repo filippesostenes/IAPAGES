@@ -1,10 +1,14 @@
 services:
   - type: web
     name: iapages-studio
-    runtime: docker
+    runtime: node
     plan: free
+    buildCommand: npm ci --omit=dev --no-audit --no-fund && npm run build
+    startCommand: npm run dev
     healthCheckPath: /health
     envVars:
+      - key: NODE_VERSION
+        value: 24.19.0
       - key: OPENAI_API_KEY
         sync: false
       - key: OPENAI_MODEL
