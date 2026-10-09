@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {once} from 'node:events';
+import {importPage} from '../server/import.mjs';
+import {createApp} from '../server/server.mjs';
+const html=await readFile(new URL('../examples/oficina-codex.html',import.meta.url),'utf8');
+test('imports a responsive workshop without claiming an API generation',()=>{const result=importPage({name:'Oficina',html,assets:[]});assert.equal(result.provider,'import');assert.equal(result.page.kind,'imported');assert.match(result.page.html,/Sua próxima viagem/);assert.match(result.page.html,/script-src 'none'/);assert.equal(result.page.provenance,undefined);});
+test('import strips active content and rejects incomplete or oversized pages',()=>{const result=importPage({name:'Oficina',assets:[],html:html.replace('</body>','<script>parent.stolen=true</script><iframe src="https://example.com"></iframe><img onerror="alert(1)" src="https://example.com/photo"></body>')});assert.doesNotMatch(result.page.html,/<script|<iframe|onerror|https:\/\/example.com\/photo/);for(const broken of ['<h1>Fragment</h1>',html.replaceAll('@media','@broken')])assert.throws(()=>importPage({name:'Oficina',html:broken,assets:[]}),e=>e.code==='INVALID_IMPORT');assert.throws(()=>importPage({name:'Oficina',html:'X'.repeat(10_000_001),assets:[]}),e=>e.code==='INVALID_IMPORT');});
+test('HTTP import works without API credit or key, requires session and origin, never invokes provider',async()=>{
+ let calls=0;const server=createApp({key:'',previewToken:'',requirePreviewToken:false,provider:async()=>{calls++;throw new Error('must not call');}});server.listen(0,'127.0.0.1');await once(server,'listening');const base=`http://127.0.0.1:${server.address().port}`,body=JSON.stringify({name:'Oficina',html,assets:[]});
+ try{const config=await fetch(base+'/api/config'),data=await config.json(),headers={'Content-Type':'application/json','X-IAPAGES-Token':data.csrf,Cookie:config.headers.get('set-cookie').split(';')[0]};assert.equal((await fetch(base+'/api/import',{method:'POST',headers:{'Content-Type':'application/json'},body})).status,403);assert.equal((await fetch(base+'/api/import',{method:'POST',headers:{...headers,Origin:'https://another.test'},body})).status,403);const imported=await fetch(base+'/api/import',{method:'POST',headers,body});assert.equal(imported.status,200);assert.equal((await imported.json()).page.kind,'imported');assert.equal(calls,0);assert.equal((await fetch(base+'/api/import',{method:'POST',headers,body:'{}'})).status,400);}finally{server.closeAllConnections();server.close();await once(server,'close');}
+});

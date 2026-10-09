@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {randomBytes,createHash,timingSafeEqual} from 'node:crypto';
 import {createProvider} from './provider.mjs';
 import {AppError} from './html.mjs';
+import {importPage} from './import.mjs';
 export function createApp({key=process.env.OPENAI_API_KEY,model=process.env.OPENAI_MODEL||'gpt-4.1',provider=createProvider({key,model}),previewToken=process.env.IAPAGES_PREVIEW_TOKEN_V2||'',requirePreviewToken=process.env.IAPAGES_REQUIRE_PRIVATE_PREVIEW==='true'||process.env.RENDER==='true'||process.env.NODE_ENV==='production'||!!process.env.IAPAGES_PREVIEW_TOKEN}={}){
  const sessions=new Map();let inFlight=false,lastStarted=0;
  const send=(res,status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
@@ -25,16 +26,18 @@ export function createApp({key=process.env.OPENAI_API_KEY,model=process.env.OPEN
  if(!sessions.has(token)){if(sessions.size>=1000)sessions.delete(sessions.keys().next().value);token=randomBytes(24).toString('hex');sessions.set(token,true);res.setHeader('Set-Cookie',`iapages_session=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=86400`);}
  return send(res,200,{aiAvailable:!!key,model:key?model:null,csrf:token});
  }
- if(req.method==='POST'&&path==='/api/generate'){
+ if(req.method==='POST'&&['/api/generate','/api/import'].includes(path)){
+ const importing=path==='/api/import';
  const cookie=req.headers.cookie?.match(/(?:^|;\s*)iapages_session=([a-f0-9]{48})/)?.[1];const token=req.headers['x-iapages-token'];
  if(!cookie||cookie!==token||!sessions.has(cookie))throw new AppError('REQUEST_DENIED','Atualize a ferramenta antes de enviar outro pedido.',403);
  if(req.headers.origin&&new URL(req.headers.origin).host!==req.headers.host)throw new AppError('REQUEST_DENIED','A solicitação deve partir da própria ferramenta.',403);
- if(!key)throw new AppError('MISSING_KEY','Nenhuma chave configurada no servidor. Cadastre o segredo e reinicie o servidor, ou selecione Demonstração.',503);
+ if(!importing&&!key)throw new AppError('MISSING_KEY','Nenhuma chave configurada no servidor. Cadastre o segredo e reinicie o servidor, ou selecione Demonstração.',503);
  if(!req.headers['content-type']?.startsWith('application/json'))throw new AppError('INVALID_REQUEST','Formato de solicitação inválido.',415);
- if(inFlight)throw new AppError('BUSY','Já existe uma geração em andamento. Aguarde a conclusão.',409);
- if(Date.now()-lastStarted<1500)throw new AppError('RATE_LIMIT','Aguarde um instante antes de gerar novamente.',429);
+ if(!importing&&inFlight)throw new AppError('BUSY','Já existe uma geração em andamento. Aguarde a conclusão.',409);
+ if(!importing&&Date.now()-lastStarted<1500)throw new AppError('RATE_LIMIT','Aguarde um instante antes de gerar novamente.',429);
  let size=0,parts=[];for await(const chunk of req){size+=chunk.length;if(size>12_000_000)throw new AppError('TOO_LARGE','Este projeto excede o limite de envio de 12 MB.',413);parts.push(chunk);}
  let body;try{body=JSON.parse(Buffer.concat(parts));}catch{throw new AppError('INVALID_REQUEST','Dados de solicitação inválidos.');}
+ if(importing)return send(res,200,importPage(body));
  // Reserve after the full request body is read, checking again to prevent concurrent uploads racing.
  if(inFlight)throw new AppError('BUSY','Já existe uma geração em andamento. Aguarde a conclusão.',409);
  inFlight=true;lastStarted=Date.now();const controller=new AbortController();const closed=()=>{if(!res.writableEnded)controller.abort();};res.on('close',closed);

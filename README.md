@@ -44,11 +44,25 @@ Para desenvolvimento local, se ainda não houver `.env`, copie `.env.example` pa
 
 A demonstração continua disponível sem chave, com os três modelos e comandos locais (título, botão, cor, fundo, seções, tamanho e foto no primeiro bloco). Não edita páginas arbitrárias geradas pela IA. O seletor nunca mistura silenciosamente os provedores.
 
+## Criar aqui no Codex, sem usar a API
+
+A assinatura ChatGPT/Codex não é um saldo de API e não pode ser usada pelo botão de geração deste aplicativo. Para trabalhar nesta conversa e guardar o resultado no IAPAGES:
+
+1. Peça a página ou a alteração na conversa com o Codex. O resultado é um HTML pronto, sem precisar editar código.
+2. No aplicativo, clique **Importar página**, selecione o HTML e escolha **Abrir como novo projeto**. A validação ocorre no servidor, sem chamar a OpenAI; funciona mesmo sem chave ou saldo da API.
+3. Para uma alteração feita nesta conversa, importe o HTML novo e escolha **Atualizar projeto atual**. Isso preserva o histórico para desfazer. Para retomar um arquivo que esta conversa não conhece, use **Baixar HTML** e anexe-o ao pedido aqui.
+4. Fotos incorporadas em JPG/PNG/WebP continuam na prévia e no download. HTML completo de até 10 MB, no máximo seis fotos dentro dos limites já descritos; scripts e recursos ativos são removidos, e a prévia permanece isolada.
+
+As páginas importadas são identificadas como **Arquivo importado**, nunca como resultado da API. O modo **Sem API** explica que pedidos livres precisam ser feitos nesta conversa; o chat interno não está conectado ao Codex. Selecionar **OpenAI** permite editar o arquivo pela API quando houver chave e saldo válidos. A importação preserva a última versão se a validação falhar.
+
+`examples/oficina-codex.html` é a primeira página criada aqui para esse fluxo: oficina fictícia, preto e laranja, serviços, orçamento e layout responsivo, sem imagens externas ou JavaScript. Ela não foi gerada pela API da OpenAI.
+
 ## Implementação e limites
 
 - `server/provider.mjs`: SDK oficial, **API Responses**, saída JSON estruturada, pedido livre, página atual, últimos 12 itens relevantes da conversa e foto selecionada como `input_image`. `store:false`, sem ferramentas, streaming ou execução de código gerado.
 - `server/html.mjs`: exige HTML completo, viewport, CSS responsivo e conteúdo; remove scripts, eventos, formulários, embeds e metadados de redirecionamento. Adiciona CSP que bloqueia scripts e rede na página gerada. Fotos são referenciadas por identificadores no prompt e incorporadas pelo servidor após a validação.
 - `server/server.mjs`: rotas específicas, segredo apenas no servidor, limite de corpo, uma geração por vez, intervalo mínimo entre pedidos e proteção contra solicitações de outras origens. Não serve `.env` nem arquivos arbitrários.
+- `server/import.mjs`: valida e sanitiza páginas recebidas por `/api/import`, com a mesma sessão/origem e acesso privado da ferramenta. Importar não depende da chave OpenAI e nunca chama o provedor de IA.
 - `src/app.js`: troca a prévia somente após receber e validar a resposta completa; falhas deixam a página e a pilha de desfazer intactas. Mensagens diferenciadas para chave ausente/recusada, conexão, timeout, limite/saldo e resposta inválida.
 - Preview em iframe `sandbox=""`, sem scripts, acesso à interface principal ou armazenamento. O HTML exportado também bloqueia scripts e recursos remotos.
 - Página inicial e **Meus projetos** com miniaturas isoladas, busca, ordenação, renomeação e exclusão com confirmação. **Novo projeto** guarda o anterior e abre outro, sem substituí-lo. Cada projeto preserva sua página, conversa, foto, modo, visualização e até 30 versões anteriores.

@@ -1,7 +1,7 @@
 // Local persistence adapter. A future account-backed adapter can implement load/save.
 const KEY='iapages.library.v2',LEGACY_KEY='iapages.project.v1';
 export const emptyProjectState=()=>({page:null,history:[],messages:[],device:'desktop',mode:'demo',modeSelected:false,attachment:null});
-export function validProjectState(value){return !!value&&Array.isArray(value.history)&&Array.isArray(value.messages)&&(!value.page||['clinic','consulting','local','ai'].includes(value.page.kind));}
+export function validProjectState(value){return !!value&&Array.isArray(value.history)&&Array.isArray(value.messages)&&(!value.page||['clinic','consulting','local','ai','imported'].includes(value.page.kind));}
 export function createProject(state=emptyProjectState(),name='Projeto sem título'){
  const now=new Date().toISOString();return {id:crypto.randomUUID(),name:name.slice(0,80),customName:false,createdAt:now,updatedAt:now,state:structuredClone(state)};
 }

@@ -7,7 +7,7 @@
     "build": "node scripts/build.mjs",
     "dev": "node --use-env-proxy --env-file-if-exists=.env scripts/serve.mjs",
     "test": "node --test tests/*.test.mjs",
-    "test:browser": "node tests/browser.mjs && node tests/ai-browser.mjs && node tests/mode-browser.mjs && node tests/projects-browser.mjs",
+    "test:browser": "node tests/browser.mjs && node tests/ai-browser.mjs && node tests/mode-browser.mjs && node tests/projects-browser.mjs && node tests/import-browser.mjs",
     "test:live": "node --use-env-proxy --env-file-if-exists=.env tests/live.mjs"
   },
   "devDependencies": {

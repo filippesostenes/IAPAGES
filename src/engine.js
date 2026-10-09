@@ -12,6 +12,7 @@ function quotedValue(raw,field){const q=raw.match(/[“"«]([^”"»]+)[”"»]/
 export async function demoProvider(request,current,attachment){
  const n=normalize(request);
  if(!current){let kind=/clinica|medic|saude/.test(n)?'clinic':/consultoria|consultor/.test(n)?'consulting':/local|cafe|cafeteria|bairro/.test(n)?'local':null;if(!kind)return {message:'Na demonstração, escolha clínica médica, consultoria ou negócio local para começar.',page:null};const page=structuredClone(templates[kind]);if(attachment)page.image=attachment;if(/verde/.test(n))page.primary='#477565';return {page,message:'Sua página está pronta! Use os comandos abaixo para ajustar o conteúdo e o visual. Todos os dados são exemplos fictícios.'};}
+ if(current.kind==='imported')return {page:null,message:'Esta página veio de um arquivo. Para usar sua assinatura, peça a alteração na conversa com o Codex e importe o novo arquivo como atualização deste projeto. O chat do IAPAGES usa a API separada quando você seleciona OpenAI.'};
  if(current.kind==='ai')return {page:null,message:'Esta página foi criada com IA. Selecione OpenAI para editar livremente; a demonstração só edita seus modelos locais.'};
  const page=structuredClone(current), changes=[];
  if(/imagem|foto/.test(n)&&/use|coloque|adicion|inclu/.test(n)){if(!attachment)return {page:null,message:'Envie uma imagem pelo botão Imagem e depois peça para usá-la no primeiro bloco.'};page.image=attachment;changes.push('imagem no primeiro bloco');}
@@ -27,7 +28,7 @@ export async function demoProvider(request,current,attachment){
 }
 function luminance(hex){let h=hex.slice(1);if(h.length===3)h=h.split('').map(x=>x+x).join('');return [.2126,.7152,.0722].reduce((sum,w,i)=>{const v=parseInt(h.slice(i*2,i*2+2),16)/255;return sum+w*(v<=.04045?v/12.92:((v+.055)/1.055)**2.4);},0);}
 export function renderPage(p){
- if(p.kind==='ai')return p.html;
+ if(['ai','imported'].includes(p.kind))return p.html;
  const e=escapeHTML, dark=luminance(p.background)<.24,fg=dark?'#f5f5f2':'#202f2a',muted=dark?'#c6ccc8':'#66736c',surface=dark?'rgba(255,255,255,.06)':'rgba(255,255,255,.7)',buttonFg=luminance(p.primary)>.4?'#192a24':'#fff';
  const service=p.kind==='clinic'?['Clínica geral','Cuidado preventivo','Saúde da família']:p.kind==='consulting'?['Estratégia de negócio','Gestão e processos','Crescimento sustentável']:['Cafés especiais','Sabores da casa','Seu momento de pausa'];
  if(p.serviceExtra)service.push(p.kind==='clinic'?'Acompanhamento personalizado':p.kind==='consulting'?'Diagnóstico personalizado':'Encontros especiais');
