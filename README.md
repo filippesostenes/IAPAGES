@@ -36,7 +36,7 @@ Para desenvolvimento local, se ainda não houver `.env`, copie `.env.example` pa
 
 ## Teste de uso
 
-1. Com a chave e a rede configuradas, selecione **OpenAI** na barra superior.
+1. Na página inicial, descreva sua ideia e clique **Criar minha página**. Isso abre um projeto no editor, sem chamar a API. Com a chave e a rede configuradas, selecione **OpenAI** no editor e clique **Gerar página** para enviar seu pedido.
 2. Digite: **“Crie uma página para um observatório astronômico, azul-escura, com atividades e chamada para agendar uma visita.”** Os três exemplos iniciais são sugestões; em OpenAI, os tipos de página não ficam limitados a eles.
 3. Após a geração, peça: **“Deixe o título maior e adicione uma seção sobre visitas escolares. Preserve o restante.”**
 4. Clique em **Imagem**, selecione JPG, PNG ou WebP e peça: **“Use esta imagem no primeiro bloco da página.”** A foto é enviada à OpenAI junto com esse pedido. A miniatura permite substituir ou remover; se a foto já estiver na página, esses controles atualizam só a imagem e criam uma versão que pode ser desfeita.
@@ -51,7 +51,8 @@ A demonstração continua disponível sem chave, com os três modelos e comandos
 - `server/server.mjs`: rotas específicas, segredo apenas no servidor, limite de corpo, uma geração por vez, intervalo mínimo entre pedidos e proteção contra solicitações de outras origens. Não serve `.env` nem arquivos arbitrários.
 - `src/app.js`: troca a prévia somente após receber e validar a resposta completa; falhas deixam a página e a pilha de desfazer intactas. Mensagens diferenciadas para chave ausente/recusada, conexão, timeout, limite/saldo e resposta inválida.
 - Preview em iframe `sandbox=""`, sem scripts, acesso à interface principal ou armazenamento. O HTML exportado também bloqueia scripts e recursos remotos.
-- Um projeto por navegador/origem, persistido em **IndexedDB** com migração do localStorage da primeira versão. Até 30 versões anteriores; conversa e foto selecionada persistem. Bloqueios/quota de armazenamento são informados. Sem sincronização ou backup na nuvem.
+- Página inicial e **Meus projetos** com miniaturas isoladas, busca, ordenação, renomeação e exclusão com confirmação. **Novo projeto** guarda o anterior e abre outro, sem substituí-lo. Cada projeto preserva sua página, conversa, foto, modo, visualização e até 30 versões anteriores.
+- Biblioteca persistida em **IndexedDB**, com migração do projeto único anterior e fallback para localStorage. `src/projects.js` separa o adaptador local (`load`/`save`) da interface, permitindo adicionar armazenamento por conta no futuro. Projetos ficam restritos ao mesmo navegador e endereço; limpar os dados do navegador os remove. Bloqueios/quota de armazenamento são informados e uma renomeação/exclusão que não for salva é revertida na interface. Não há sincronização ou backup na nuvem.
 - JPG/PNG/WebP de até 10 MB na entrada, otimizados para até 1600 pixels e aproximadamente 1 MB. Até seis fotos na página; a imagem original não é guardada em um servidor de arquivos. O corpo de requisição tem limite de 12 MB.
 - HTML/CSS estático. CTAs, imagens e âncoras funcionam; funções que exigem JavaScript, backend, pagamentos ou login não são geradas. Informações inventadas devem ser identificadas como exemplos. A verificação de integridade não garante fidelidade perfeita ao pedido ou preservação visual pelo modelo; é possível desfazer e refinar.
 
@@ -65,9 +66,13 @@ npm run test:browser
 npm run test:live
 ```
 
-Os testes unitários/HTTP verificam Responses, multimodalidade, contexto, sanitização, erros, ausência de chave e proteção contra duplicatas. Os testes de navegador verificam os três modelos e, usando **respostas controladas do SDK**, os fluxos da integração e imagens, recarga, versões, download, responsividade e falhas sem perda da versão anterior. Essas respostas de teste não ficam disponíveis na aplicação.
+Os testes unitários/HTTP verificam Responses, multimodalidade, contexto, sanitização, erros, ausência de chave, proteção contra duplicatas e migração da biblioteca. Os testes de navegador verificam os três modelos e, usando **respostas controladas do SDK**, os fluxos da integração e imagens, recarga, versões, download, responsividade e falhas sem perda da versão anterior. Também verificam dois projetos independentes, fotos e conversas separadas, retomada, renomeação, busca/ordenação, exclusão confirmada, falha de armazenamento e miniaturas em sandbox. Essas respostas de teste não ficam disponíveis na aplicação.
 
-Na última verificação, o pedido real da oficina foi enviado pelo chat e retornou `401 / invalid_api_key`; o SDK e uma chamada direta à Responses confirmaram a rejeição. A prévia anterior ficou intacta; geração e edição reais ainda não foram concluídas. `test:live` informa o bloqueio e termina com status de erro nessa situação. Quando configurado, verifica geração e edição reais e salva os documentos em `dist/live-*.html`. A configuração de rede atual permite a chamada à API; o bloqueio observado é a rejeição do segredo. Para colocar o aplicativo online, consulte [DEPLOY.md](DEPLOY.md). A configuração Render usa o runtime nativo Node, com os comandos verificados aqui; o Dockerfile é opcional e a imagem não foi validada; o serviço externo só terá endereço após implantação na conta de hospedagem.
+Na verificação real anterior neste ambiente, o pedido da oficina retornou `401 / invalid_api_key`. Após atualizar a configuração no Render, o usuário conseguiu abrir o aplicativo online e relatou uma resposta de limite de uso/saldo da OpenAI. Isso não confirma uma geração concluída. Esta etapa da página inicial não realiza chamadas reais à API: os testes usam demonstração e respostas controladas. `test:live` verifica geração e edição reais quando houver uma chave e saldo válidos e salva os documentos em `dist/live-*.html`; erros terminam com status de falha. Para implantar ou atualizar o aplicativo, consulte [DEPLOY.md](DEPLOY.md). A configuração Render usa o runtime nativo Node, com os comandos verificados aqui; o Dockerfile é opcional e a imagem não foi validada.
+
+## Contas e planos em uma próxima etapa
+
+Não há login, contas, pagamentos ou créditos por usuário nesta versão. A identificação local de um projeto não representa autorização de acesso. Para oferecer planos a clientes, a próxima etapa exige autenticação no servidor, banco de dados com projetos e versões associados ao usuário, verificação de propriedade em cada operação, medição e limites de uso no servidor e pagamentos com webhooks verificados. O adaptador local é um ponto de extensão; não substitui essas proteções. A página inicial indica o salvamento local e não apresenta um login simulado.
 
 ## Atualização do acesso privado
 

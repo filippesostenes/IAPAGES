@@ -5,7 +5,7 @@ const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless
 try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}});
  let responses=[];page.on('response',async r=>{if(r.url().endsWith('/api/generate')){try{const data=await r.json();responses.push({status:r.status(),provider:data.provider,error:data.error,page:data.page});}catch{responses.push({status:r.status()});}}});
- await page.goto('http://127.0.0.1:3000');await page.locator('#send:not([disabled])').waitFor();
+ await page.goto('http://127.0.0.1:3000');if(await page.locator('#home-screen').isVisible())await page.locator('#new-project').click();await page.locator('#send:not([disabled])').waitFor();
  console.log('Server configuration and frontend reachable.');
  await page.locator('#mode').selectOption('demo');await page.locator('[data-example="clinic"]').click();await page.locator('#send:not([disabled])').waitFor();
  const frame=page.frameLocator('#page-preview');const before=await frame.locator('body').innerText();assert.match(before,/Clínica Essência/);

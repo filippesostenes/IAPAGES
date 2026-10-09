@@ -7,7 +7,8 @@ const browser=await chromium.launch({executablePath:'/usr/bin/chromium',headless
 const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});
 const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 await page.goto(`http://127.0.0.1:${server.address().port}`);
-await page.screenshot({path:'dist/studio-inicio.png',fullPage:true});
+await page.screenshot({path:'dist/home-inicio.png',fullPage:true});
+await page.locator('#new-project').click();await page.screenshot({path:'dist/studio-inicio.png',fullPage:true});
 await page.locator('[data-example="clinic"]').click();
 await page.locator('#frame-shell:not([hidden])').waitFor();
 const frame=page.frameLocator('#page-preview');
@@ -28,9 +29,8 @@ assert.equal(await frame.locator('html').evaluate(e=>e.scrollWidth>e.clientWidth
 await page.reload();assert.match(await frame.locator('h1').innerText(),/Cuidado que transforma/);assert.equal(await page.locator('#mobile').getAttribute('aria-pressed'),'true');
 await page.locator('#desktop').click();await expect.poll(()=>page.locator('#frame-shell').evaluate(e=>Math.round(e.getBoundingClientRect().width))).toBeGreaterThan(900);await page.screenshot({path:'dist/studio-projeto.png',fullPage:true});
 const downloadPromise=page.waitForEvent('download');await page.locator('#download').click();const download=await downloadPromise;await download.saveAs('dist/pagina-exemplo.html');
-await page.locator('#new-project').click();await page.locator('#cancel-new').click();assert.equal(await page.locator('#frame-shell').isVisible(),true);
-await page.locator('#new-project').click();await page.locator('#confirm-new').click();assert.equal(await page.locator('#welcome').isVisible(),true);
-for(const kind of ['consulting','local']){await page.locator(`[data-example="${kind}"]`).click();await page.locator('#send:not([disabled])').waitFor();assert.ok(await frame.locator('h1').innerText());await page.locator('#new-project').click();await page.locator('#confirm-new').click();}
+await page.locator('#new-project').click();assert.equal(await page.locator('#welcome').isVisible(),true);
+for(const kind of ['consulting','local']){await page.locator(`[data-example="${kind}"]`).click();await page.locator('#send:not([disabled])').waitFor();assert.ok(await frame.locator('h1').innerText());await page.locator('#new-project').click();}
 await page.setViewportSize({width:390,height:844});await page.screenshot({path:'dist/studio-celular.png',fullPage:true});assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
 assert.equal(await page.locator('#page-preview').getAttribute('sandbox'),'');
 
