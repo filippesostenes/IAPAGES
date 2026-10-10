@@ -2,6 +2,16 @@
 
 Criação e edição de páginas estáticas por conversa, com prévia visual isolada, imagens, histórico e exportação. A interface não exige abrir ou editar HTML.
 
+## Interface e criação
+
+A interface é branca, com navegação lateral, feed de inspiração e **Meu perfil** em grade. A marca é IAPAGES. A capa usa a primeira foto da página quando há uma; caso contrário, mostra uma miniatura isolada do site. Clicar na capa abre a página pronta, e **Editar página** volta ao chat. O perfil é local, sem conta, seguidores ou publicação pública.
+
+**Criar página** abre quatro formatos: **Link da bio**, **Landing page**, **Página de vendas** e **Negócio local**. Depois, escolha **Quero escrever meu pedido** para ir ao chat ou **Me ajude com perguntas** para informar nome, negócio, descrição, cores, foto e botão/link de contato. O formulário monta o pedido e usa o provedor selecionado: **Demonstração** monta um modelo local com as respostas; **OpenAI** envia o pedido e a foto ao servidor e exige chave e saldo da API. Não há fallback simulado em caso de erro da OpenAI.
+
+**Explorar modelos** oferece seis exemplos locais e filtros pelos quatro formatos. Usar/salvar um exemplo cria um projeto independente, identificado como demonstração. Os exemplos não limitam os pedidos livres no modo OpenAI. O botão da logo leva ao início; o ícone do perfil abre os projetos salvos. Em telas menores, a navegação fica na barra inferior.
+
+Esta etapa não usa a assinatura do ChatGPT/Codex no chat interno. Também não adiciona login, planos ou links públicos dos sites. As páginas ficam salvas no navegador e podem ser baixadas com fotos incorporadas.
+
 ## Abrir e testar
 
 A prévia independente está em `dist/index.html`. Abra o arquivo no navegador para experimentar **Demonstração e envio de imagens** sem instalação. O arquivo independente não chama a OpenAI: a IA precisa do servidor abaixo, na mesma origem da interface.
@@ -14,11 +24,11 @@ npm run build
 npm run dev
 ```
 
-Abra a porta **3000** no encaminhamento privado de portas do seu ambiente. Se estiver executando na sua máquina, abra a aplicação na porta 3000 pelo navegador local. O servidor também aceita `PORT` e `HOST`. Não há URL pública provisionada por este repositório. O servidor é para teste pessoal em ambiente privado; não o exponha publicamente sem acrescentar controle de acesso.
+Abra a porta **3000** no encaminhamento privado de portas do seu ambiente. Se estiver executando na sua máquina, abra a aplicação na porta 3000 pelo navegador local. O servidor também aceita `PORT` e `HOST`. O serviço já criado no Render é `iapages-studio-vbf2`, em https://iapages-studio-vbf2.onrender.com, com acesso privado. Para atualizar esse serviço, veja DEPLOY.md; não crie outro Blueprint.
 
 ## Chave segura neste ambiente na nuvem
 
-O segredo **está cadastrado, mas a API o recusou com `401 / invalid_api_key` na última verificação** e não deve ser colocada na conversa nem em qualquer arquivo do frontend.
+A chave fica somente no servidor. A verificação anterior neste ambiente retornou `401 / invalid_api_key`; depois, o usuário relatou limite de uso/saldo no Render. Isso não confirma uma geração concluída. Não coloque a chave na conversa nem no frontend.
 
 1. Abra **Configurações do ambiente** e substitua o valor no requisito de segredo **`IAPAGES_OPENAI_KEY`**, com destino HTTPS **`api.openai.com`**. O requisito e a liberação de rede já existem. Não é necessário duplicar o segredo.
 2. Revise e salve a configuração e publique o ambiente para aplicá-la. Reinicie o servidor para receber o segredo atualizado.
@@ -65,7 +75,7 @@ As páginas importadas são identificadas como **Arquivo importado**, nunca como
 - `server/import.mjs`: valida e sanitiza páginas recebidas por `/api/import`, com a mesma sessão/origem e acesso privado da ferramenta. Importar não depende da chave OpenAI e nunca chama o provedor de IA.
 - `src/app.js`: troca a prévia somente após receber e validar a resposta completa; falhas deixam a página e a pilha de desfazer intactas. Mensagens diferenciadas para chave ausente/recusada, conexão, timeout, limite/saldo e resposta inválida.
 - Preview em iframe `sandbox=""`, sem scripts, acesso à interface principal ou armazenamento. O HTML exportado também bloqueia scripts e recursos remotos.
-- Página inicial e **Meus projetos** com miniaturas isoladas, busca, ordenação, renomeação e exclusão com confirmação. **Novo projeto** guarda o anterior e abre outro, sem substituí-lo. Cada projeto preserva sua página, conversa, foto, modo, visualização e até 30 versões anteriores.
+- Página inicial e **Meu perfil** com capas, busca, ordenação, renomeação e exclusão com confirmação. **Criar página** guarda o anterior e oferece categoria e método de criação. Cada projeto preserva sua página, conversa, foto, modo, visualização e até 30 versões anteriores.
 - Biblioteca persistida em **IndexedDB**, com migração do projeto único anterior e fallback para localStorage. `src/projects.js` separa o adaptador local (`load`/`save`) da interface, permitindo adicionar armazenamento por conta no futuro. Projetos ficam restritos ao mesmo navegador e endereço; limpar os dados do navegador os remove. Bloqueios/quota de armazenamento são informados e uma renomeação/exclusão que não for salva é revertida na interface. Não há sincronização ou backup na nuvem.
 - JPG/PNG/WebP de até 10 MB na entrada, otimizados para até 1600 pixels e aproximadamente 1 MB. Até seis fotos na página; a imagem original não é guardada em um servidor de arquivos. O corpo de requisição tem limite de 12 MB.
 - HTML/CSS estático. CTAs, imagens e âncoras funcionam; funções que exigem JavaScript, backend, pagamentos ou login não são geradas. Informações inventadas devem ser identificadas como exemplos. A verificação de integridade não garante fidelidade perfeita ao pedido ou preservação visual pelo modelo; é possível desfazer e refinar.
@@ -80,7 +90,7 @@ npm run test:browser
 npm run test:live
 ```
 
-Os testes unitários/HTTP verificam Responses, multimodalidade, contexto, sanitização, erros, ausência de chave, proteção contra duplicatas e migração da biblioteca. Os testes de navegador verificam os três modelos e, usando **respostas controladas do SDK**, os fluxos da integração e imagens, recarga, versões, download, responsividade e falhas sem perda da versão anterior. Também verificam dois projetos independentes, fotos e conversas separadas, retomada, renomeação, busca/ordenação, exclusão confirmada, falha de armazenamento e miniaturas em sandbox. Essas respostas de teste não ficam disponíveis na aplicação.
+Os testes unitários/HTTP verificam Responses, multimodalidade, contexto, sanitização, erros, ausência de chave, proteção contra duplicatas e migração da biblioteca. Os testes de navegador verificam os seis modelos, os quatro formatos, formulário guiado e foto, perfil em grade, visualização das capas e filtros de exploração; também verificam, usando **respostas controladas do SDK**, os fluxos da integração e imagens, recarga, versões, download, responsividade e falhas sem perda da versão anterior. Também verificam dois projetos independentes, fotos e conversas separadas, retomada, renomeação, busca/ordenação, exclusão confirmada, falha de armazenamento e miniaturas em sandbox. Essas respostas de teste não ficam disponíveis na aplicação.
 
 Na verificação real anterior neste ambiente, o pedido da oficina retornou `401 / invalid_api_key`. Após atualizar a configuração no Render, o usuário conseguiu abrir o aplicativo online e relatou uma resposta de limite de uso/saldo da OpenAI. Isso não confirma uma geração concluída. Esta etapa da página inicial não realiza chamadas reais à API: os testes usam demonstração e respostas controladas. `test:live` verifica geração e edição reais quando houver uma chave e saldo válidos e salva os documentos em `dist/live-*.html`; erros terminam com status de falha. Para implantar ou atualizar o aplicativo, consulte [DEPLOY.md](DEPLOY.md). A configuração Render usa o runtime nativo Node, com os comandos verificados aqui; o Dockerfile é opcional e a imagem não foi validada.
 

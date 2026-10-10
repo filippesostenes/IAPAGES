@@ -1,7 +1,7 @@
 // Local persistence adapter. A future account-backed adapter can implement load/save.
 const KEY='iapages.library.v2',LEGACY_KEY='iapages.project.v1';
 export const emptyProjectState=()=>({page:null,history:[],messages:[],device:'desktop',mode:'demo',modeSelected:false,attachment:null});
-export function validProjectState(value){return !!value&&Array.isArray(value.history)&&Array.isArray(value.messages)&&(!value.page||['clinic','consulting','local','ai','imported'].includes(value.page.kind));}
+export function validProjectState(value){return !!value&&Array.isArray(value.history)&&Array.isArray(value.messages)&&(!value.page||['clinic','consulting','local','bio','landing','sales','ai','imported'].includes(value.page.kind));}
 export function createProject(state=emptyProjectState(),name='Projeto sem título'){
  const now=new Date().toISOString();return {id:crypto.randomUUID(),name:name.slice(0,80),customName:false,createdAt:now,updatedAt:now,state:structuredClone(state)};
 }
@@ -9,7 +9,7 @@ export function createLibrary(saved,legacy){
  if(saved?.version===2&&Array.isArray(saved.projects)){
   const ids=new Set(),projects=saved.projects.filter(p=>typeof p.id==='string'&&!ids.has(p.id)&&validProjectState(p.state)&&ids.add(p.id)).map(p=>({...p,name:typeof p.name==='string'?p.name.slice(0,80):'Projeto sem título'}));
   const activeId=projects.some(p=>p.id===saved.activeId)?saved.activeId:null;
-  return {version:2,projects,activeId,view:activeId&&saved.view==='editor'?'editor':saved.view==='projects'?'projects':'home'};
+  return {version:2,projects,activeId,view:activeId&&saved.view==='editor'?'editor':['projects','explore'].includes(saved.view)?saved.view:'home'};
  }
  if(validProjectState(legacy)&&(legacy.page||legacy.messages.length||legacy.attachment)){
   const project=createProject({...emptyProjectState(),...legacy},legacy.page?.name||'Meu primeiro projeto');

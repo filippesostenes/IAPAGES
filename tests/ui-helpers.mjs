@@ -1,0 +1,2 @@
+export async function startPromptProject(page){await page.locator('#new-project').click();await page.locator('[data-category="landing"]').click();await page.locator('#method-prompt').click();}
+export async function editCover(page,first=false){const cover=page.locator('.project-open');await (first?cover.first():cover).click();if(await page.locator('#page-view-dialog').isVisible())await page.locator('#page-view-edit').click();}
