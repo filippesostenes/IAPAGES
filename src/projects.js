@@ -9,13 +9,13 @@ export function createLibrary(saved,legacy){
  if(saved?.version===2&&Array.isArray(saved.projects)){
   const ids=new Set(),projects=saved.projects.filter(p=>typeof p.id==='string'&&!ids.has(p.id)&&validProjectState(p.state)&&ids.add(p.id)).map(p=>({...p,name:typeof p.name==='string'?p.name.slice(0,80):'Projeto sem título'}));
   const activeId=projects.some(p=>p.id===saved.activeId)?saved.activeId:null;
-  return {version:2,projects,activeId,view:activeId&&saved.view==='editor'?'editor':['projects','explore'].includes(saved.view)?saved.view:'home'};
+  return {version:2,projects,activeId,view:activeId&&saved.view==='editor'?'editor':['projects','explore','saved'].includes(saved.view)?saved.view:'home',savedTemplates:[...new Set((Array.isArray(saved.savedTemplates)?saved.savedTemplates:[]).filter(k=>typeof k==='string'))],savedProjects:[...new Set((Array.isArray(saved.savedProjects)?saved.savedProjects:[]).filter(id=>projects.some(p=>p.id===id)))]};
  }
  if(validProjectState(legacy)&&(legacy.page||legacy.messages.length||legacy.attachment)){
   const project=createProject({...emptyProjectState(),...legacy},legacy.page?.name||'Meu primeiro projeto');
-  return {version:2,projects:[project],activeId:project.id,view:'editor'};
+  return {version:2,projects:[project],activeId:project.id,view:'editor',savedTemplates:[],savedProjects:[]};
  }
- return {version:2,projects:[],activeId:null,view:'home'};
+ return {version:2,projects:[],activeId:null,view:'home',savedTemplates:[],savedProjects:[]};
 }
 export function updateProject(library,id,state,{touch=true}={}){
  const project=library.projects.find(p=>p.id===id);if(!project)return;

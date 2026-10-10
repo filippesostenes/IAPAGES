@@ -9,7 +9,7 @@ O serviço do usuário já existe: **iapages-studio-vbf2**. Esta atualização d
 1. Abra https://dashboard.render.com/web/srv-db4i1sks728c73fcihg0.
 2. Clique **Manual Deploy → Deploy latest commit**.
 3. Aguarde **Live**. Abra https://iapages-studio-vbf2.onrender.com no navegador que já foi autorizado e recarregue a página.
-4. Confira o fundo branco e **Meu perfil**. Clique **Criar página → formato → Me ajude com perguntas**. Selecione **Demonstração** para testar sem saldo da API; para geração livre pela OpenAI, é necessário saldo válido da API.
+4. Confira **Feed**, **Explorar modelos**, **Salvos** e **Meu perfil**. Para testar sem crédito, abra **Explorar modelos → banner → Usar este modelo**; o editor passa para Demonstração. Para criar pelas perguntas, clique **Criar página → formato → Me ajude com perguntas**. Selecione **Demonstração** para testar sem saldo da API; para geração livre pela OpenAI, é necessário saldo válido da API.
 
 O envio para GitHub não confirma uma implantação concluída. Esta conversa não tem acesso ao painel administrativo do Render para acionar ou verificar o deploy. Se a autorização do navegador expirar, use o link privado atual guardado por você; não compartilhe tokens no chat.
 

@@ -1,3 +1,4 @@
+import {catalogTemplates,renderCatalogPage} from './catalog.js';
 // Provider boundary: replace demoProvider with a server-backed provider in the future.
 // API credentials belong on the server. This provider uses only local, deterministic rules.
 export const templates = {
@@ -9,6 +10,7 @@ export const templates = {
 templates.bio={name:'Lia Martins',eyebrow:'CRIADORA · DESIGNER · IDEIAS',title:'Um lugar para todos os meus links.',description:'Conheça meu trabalho, encontre meus conteúdos e vamos conversar.',button:'Fale comigo',primary:'#8764ba',background:'#faf7ff',kind:'bio',services:true,testimonials:false,about:false,size:48,serviceItems:['Meu portfólio','Meus conteúdos','Meus serviços']};
 templates.landing={name:'Ateliê Forma',eyebrow:'FEITO PARA SUA PRÓXIMA IDEIA',title:'Sua ideia merece ganhar forma.',description:'Design com propósito, atenção aos detalhes e soluções que acompanham seu negócio.',button:'Fale conosco',primary:'#3055c6',background:'#f6f8ff',kind:'landing',services:true,testimonials:false,about:true,size:64,serviceItems:['Atendimento próximo','Soluções personalizadas','Cuidado em cada detalhe']};
 templates.sales={name:'Curso Primeiro Passo',eyebrow:'APRENDA NO SEU RITMO',title:'Uma nova habilidade. Um novo começo.',description:'Um curso de exemplo para transformar curiosidade em prática. Conheça o conteúdo e dê o primeiro passo.',button:'Quero saber mais',primary:'#c66a35',background:'#fff7ee',kind:'sales',services:true,testimonials:false,about:true,size:64,serviceItems:['Conteúdo passo a passo','Exercícios práticos','Acesso no seu ritmo']};
+Object.assign(templates,catalogTemplates);
 export const categories={bio:{label:'Link da bio',description:'Todos os seus links em um só lugar.',symbol:'→'},landing:{label:'Landing page',description:'Apresente sua marca e atraia contatos.',symbol:'✦'},sales:{label:'Página de vendas',description:'Mostre sua oferta e seus benefícios.',symbol:'✧'},local:{label:'Negócio local',description:'Leve seu negócio para a internet.',symbol:'⌂'}};
 export function briefPrompt(brief){
  const lines=[`Crie uma ${categories[brief.category]?.label||'landing page'} completa e responsiva.`,`Nome: ${brief.name}.`,`Negócio, serviço ou produto: ${brief.business}.`,`Descrição: ${brief.description||brief.business}.`,`Cor principal: ${brief.primary}. Fundo: ${brief.background}.`,`Texto do botão: ${brief.button}.`];
@@ -44,6 +46,7 @@ export async function demoProvider(request,current,attachment,brief){
 function luminance(hex){let h=hex.slice(1);if(h.length===3)h=h.split('').map(x=>x+x).join('');return [.2126,.7152,.0722].reduce((sum,w,i)=>{const v=parseInt(h.slice(i*2,i*2+2),16)/255;return sum+w*(v<=.04045?v/12.92:((v+.055)/1.055)**2.4);},0);}
 export function renderPage(p){
  if(['ai','imported'].includes(p.kind))return p.html;
+ if(p.catalog)return renderCatalogPage(p);
  const e=escapeHTML, dark=luminance(p.background)<.24,fg=dark?'#f5f5f2':'#202f2a',muted=dark?'#c6ccc8':'#66736c',surface=dark?'rgba(255,255,255,.06)':'rgba(255,255,255,.7)',buttonFg=luminance(p.primary)>.4?'#192a24':'#fff';
  const service=p.serviceItems?[...p.serviceItems]:p.kind==='clinic'?['Clínica geral','Cuidado preventivo','Saúde da família']:p.kind==='consulting'?['Estratégia de negócio','Gestão e processos','Crescimento sustentável']:['Cafés especiais','Sabores da casa','Seu momento de pausa'];
  if(p.serviceExtra)service.push(p.kind==='clinic'?'Acompanhamento personalizado':p.kind==='consulting'?'Diagnóstico personalizado':'Encontros especiais');
