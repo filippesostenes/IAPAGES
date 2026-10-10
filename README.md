@@ -24,7 +24,7 @@ npm run build
 npm run dev
 ```
 
-Abra a porta **3000** no encaminhamento privado de portas do seu ambiente. Se estiver executando na sua máquina, abra a aplicação na porta 3000 pelo navegador local. O servidor também aceita `PORT` e `HOST`. O serviço já criado no Render é `iapages-studio-vbf2`, em https://iapages-studio-vbf2.onrender.com, com acesso privado. Para atualizar esse serviço, veja DEPLOY.md; não crie outro Blueprint.
+Abra a porta **3000** no encaminhamento privado de portas do seu ambiente. Se estiver executando na sua máquina, abra a aplicação na porta 3000 pelo navegador local. O servidor também aceita `PORT` e `HOST`. O serviço já criado no Render é `iapages-studio-vbf2`, em https://iapages-studio-vbf2.onrender.com, com interface e demonstração abertas e operações do servidor protegidas por autorização. Para atualizar esse serviço, veja DEPLOY.md; não crie outro Blueprint.
 
 ## Chave segura neste ambiente na nuvem
 
@@ -101,4 +101,12 @@ Não há login, contas, pagamentos ou créditos por usuário nesta versão. A id
 
 ## Atualização do acesso privado
 
-O Blueprint agora gera `IAPAGES_PREVIEW_TOKEN_V2`; a variável antiga `IAPAGES_PREVIEW_TOKEN` foi descontinuada e não permite entrar. Sincronize o Blueprint e aguarde o redeploy para obter o novo valor em Environment do Render. Em produção, ausência do token novo bloqueia interface e API. A chave OpenAI continua exigindo revogação/substituição pela conta proprietária; nenhuma chave é criada ou revogada por essa migração.
+O Blueprint agora gera `IAPAGES_PREVIEW_TOKEN_V2`; a variável antiga `IAPAGES_PREVIEW_TOKEN` foi descontinuada e não permite entrar. Sincronize o Blueprint e aguarde o redeploy para obter o novo valor em Environment do Render. Em produção, ausência do token novo bloqueia as operações do servidor. A interface e os modelos de Demonstração continuam disponíveis. A chave OpenAI continua exigindo revogação/substituição pela conta proprietária; nenhuma chave é criada ou revogada por essa migração.
+
+## Acesso direto aos modelos e autorização da API
+
+O endereço normal do aplicativo (`/`) e `/index.html` abrem a interface sem token. `/api/config` em um navegador não autorizado informa `aiAvailable:false`, `model:null` e `accessRequired:true`; não expõe o segredo, seu valor ou o modelo configurado. Isso permite testar Feed, Explorar, Salvos, perfil e páginas locais sem usar a API. Os projetos continuam no armazenamento de cada navegador; o servidor não entrega projetos privados de outras pessoas.
+
+As rotas `/api/generate` e `/api/import` continuam exigindo a autorização privada, sessão e verificação de origem. A ausência do token em produção mantém essas rotas bloqueadas. O botão **Liberar acesso** abre um formulário dentro da ferramenta: copie o valor de `IAPAGES_PREVIEW_TOKEN_V2` em Environment do Render e cole no campo de acesso. Não coloque a chave OpenAI nesse campo. O formulário envia o código por POST à mesma origem, exige sessão/origem, limita o corpo e troca o código por um cookie HttpOnly. O código não é devolvido na resposta nem salvo pelo aplicativo em localStorage ou URL. Uma tentativa inválida não autoriza o navegador e preserva a página atual.
+
+Os links `/open?access=...` existentes continuam compatíveis; links inválidos abrem o formulário do aplicativo em vez de mostrar um erro JSON na entrada. A expiração ou troca do cookie volta ao modo Demonstração e mantém os projetos do navegador. Autorizar o acesso não gera uma página e não fornece créditos: OpenAI continua dependendo do saldo da API. Os testes de acesso verificam esses limites e o fluxo no navegador com valores fictícios, sem chamadas reais à OpenAI.

@@ -8,10 +8,10 @@ O serviço do usuário já existe: **iapages-studio-vbf2**. Esta atualização d
 
 1. Abra https://dashboard.render.com/web/srv-db4i1sks728c73fcihg0.
 2. Clique **Manual Deploy → Deploy latest commit**.
-3. Aguarde **Live**. Abra https://iapages-studio-vbf2.onrender.com no navegador que já foi autorizado e recarregue a página.
+3. Aguarde **Live**. Abra https://iapages-studio-vbf2.onrender.com e recarregue. Os modelos e a Demonstração abrem sem token.
 4. Confira **Feed**, **Explorar modelos**, **Salvos** e **Meu perfil**. Para testar sem crédito, abra **Explorar modelos → banner → Usar este modelo**; o editor passa para Demonstração. Para criar pelas perguntas, clique **Criar página → formato → Me ajude com perguntas**. Selecione **Demonstração** para testar sem saldo da API; para geração livre pela OpenAI, é necessário saldo válido da API.
 
-O envio para GitHub não confirma uma implantação concluída. Esta conversa não tem acesso ao painel administrativo do Render para acionar ou verificar o deploy. Se a autorização do navegador expirar, use o link privado atual guardado por você; não compartilhe tokens no chat.
+O envio para GitHub não confirma uma implantação concluída. Esta conversa não tem acesso ao painel administrativo do Render para acionar ou verificar o deploy. Para liberar operações do servidor, use o botão Liberar acesso e cole ali o valor de IAPAGES_PREVIEW_TOKEN_V2 obtido em Environment. Isso não é necessário para testar os modelos. Não compartilhe tokens no chat.
 
 ## Corrigir a chave no ambiente atual
 
@@ -25,7 +25,7 @@ render.yaml está preparado para o runtime nativo Node, usando os mesmos comando
 2. Clique **New + → Blueprint** e conecte o repositório **filippesostenes/IAPAGES**, branch **main**. (Se a conta ainda não estiver conectada, clique para conectar o GitHub e autorize esse repositório.)
 3. Na configuração pedida por `render.yaml`, preencha **OPENAI_API_KEY** secretamente com uma chave válida. Nesse host o nome OPENAI_API_KEY é permitido diretamente.
 4. Clique **Apply**. Aguarde o serviço aparecer como **Live**. O endereço HTTPS real é mostrado na página do serviço; ele não existe antes da implantação.
-5. No serviço, abra **Environment**. Veja o valor gerado de **IAPAGES_PREVIEW_TOKEN_V2** e abra no navegador o endereço do serviço com **/open?access=VALOR_DO_TOKEN**. Isso libera a prévia pessoal sem cadastro ou tela de login. Guarde esse link para seu uso; ele dá acesso ao aplicativo e ao uso da API. A chave OpenAI não faz parte do link.
+5. O endereço normal abre o aplicativo e os modelos em Demonstração sem token. Para usar a API, no serviço abra **Environment** e copie o valor de **IAPAGES_PREVIEW_TOKEN_V2**. Dentro do aplicativo, clique **Liberar acesso** e cole o valor no campo de código. A chave OpenAI fica somente no servidor e não deve ser colocada nesse campo. Links privados anteriores continuam compatíveis.
 6. Na ferramenta, selecione **OpenAI** se necessário. Envie **Crie uma página para uma oficina mecânica, com fundo preto, detalhes laranja, serviços e botão de orçamento**. Após terminar, envie **Altere o título para “Sua oficina de confiança” e preserve o restante**.
 
 O plano gratuito pode suspender o processo após inatividade. O primeiro acesso após a suspensão pode demorar. O projeto é salvo no navegador por origem: um endereço novo não terá o histórico guardado em outro endereço. A rota `/health` serve para verificação de infraestrutura e não revela configuração nem permite gerações. Em uma implantação pública, mantenha IAPAGES_PREVIEW_TOKEN_V2 configurado.
@@ -34,6 +34,6 @@ Para atualizar os fontes de um checkout Git existente após revisar o projeto, f
 
 ## Troca do token de acesso
 
-A configuração atual pede ao Render que gere uma variável nova, IAPAGES_PREVIEW_TOKEN_V2. O servidor não aceita mais a variável antiga IAPAGES_PREVIEW_TOKEN nem cookies de acesso derivados dela. Após a sincronização do Blueprint e o redeploy, copie o valor NOVO em Environment. Se a sincronização automática não ocorrer, abra Blueprints, selecione Filippesosteness e clique Manual sync, depois aguarde a implantação no serviço iapages-studio-vbf2. Quando a nova variável estiver ausente, uma implantação pública fica bloqueada em vez de liberar o aplicativo. Apenas /health continua acessível para a infraestrutura.
+A configuração atual pede ao Render que gere uma variável nova, IAPAGES_PREVIEW_TOKEN_V2. O servidor não aceita mais a variável antiga IAPAGES_PREVIEW_TOKEN nem cookies de acesso derivados dela. Após a sincronização do Blueprint e o redeploy, copie o valor NOVO em Environment. Se a sincronização automática não ocorrer, abra Blueprints, selecione Filippesosteness e clique Manual sync, depois aguarde a implantação no serviço iapages-studio-vbf2. Quando a nova variável estiver ausente, as operações da API ficam bloqueadas; a interface e os modelos locais continuam disponíveis para teste. /health continua acessível para a infraestrutura.
 
 A revogação de uma chave OpenAI exposta deve ser feita pelo proprietário na plataforma OpenAI. Esta alteração não revoga nem substitui OPENAI_API_KEY. Crie uma chave nova e atualize esse campo em Environment do Render, usando a opção de salvar e implantar. Não compartilhe seus valores no chat nem em capturas.
